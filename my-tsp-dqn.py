@@ -37,10 +37,15 @@ class Qnet(nn.Module):
         out = self.forward(obs)
         coin = random.random()
         if coin < epsilon:
-            return random.randint(0, 1)
+            return random.randint(0, 1), out
         else:
-            return out.argmax().item()
+            return out.argmax().item(), out
 
+
+def preprocessing(seq, state):
+    seq_in = np.identity(4)[len(seq) - 1]  # [1 0 0 0] -> [0 0 0 1]
+    state_in = np.identity(4)[state]
+    return np.concatenate((seq_in, state_in))
 
 
 def main():
@@ -58,7 +63,10 @@ def main():
         print(e)
 
         while not done:
-            a = q.sample_action(torch.from_numpy(s))
+            s_in = torch.from_numpy(preprocessing(seq, state)).float()
+            a, out = q.sample_action(s_in, e)
+
+
 
 
 if __name__ == '__main__':
