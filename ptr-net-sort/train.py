@@ -94,3 +94,111 @@ for epoch in range(EPOCH):
 # Test...
 print('Test...')
 evaluate(model, test_X, test_Y)
+
+
+
+# Training...
+# Epoch: 0, Loss: 0.99542
+# Acc: 0.00%
+# Epoch: 2, Loss: 0.84342
+# Acc: 0.00%
+# Epoch: 4, Loss: 0.90028
+# Acc: 0.00%
+# Epoch: 6, Loss: 0.95734
+# Acc: 0.00%
+# Epoch: 8, Loss: 0.74193
+# Acc: 0.00%
+# Epoch: 10, Loss: 0.85922
+# Acc: 0.00%
+# Epoch: 12, Loss: 0.72589
+# Acc: 0.00%
+# Epoch: 14, Loss: 0.88290
+# Acc: 0.00%
+# Epoch: 16, Loss: 0.74075
+# Acc: 0.00%
+# Epoch: 18, Loss: 0.75814
+# Acc: 0.00%
+# Epoch: 20, Loss: 0.80860
+# Acc: 0.00%
+# Epoch: 22, Loss: 0.74228
+# Acc: 0.00%
+# Epoch: 24, Loss: 0.70597
+# Acc: 0.00%
+# Epoch: 26, Loss: 0.67966
+# Acc: 0.00%
+# Epoch: 28, Loss: 0.80013
+# Acc: 0.00%
+# Epoch: 30, Loss: 0.70278
+# Acc: 0.00%
+# Epoch: 32, Loss: 0.73939
+# Acc: 0.00%
+# Epoch: 34, Loss: 0.74251
+# Acc: 0.00%
+# Epoch: 36, Loss: 0.62284
+# Acc: 0.00%
+# Epoch: 38, Loss: 0.66134
+# Acc: 0.00%
+# Epoch: 40, Loss: 0.66684
+# Acc: 0.00%
+# Epoch: 42, Loss: 0.62876
+# Acc: 0.00%
+# Epoch: 44, Loss: 0.68352
+# Acc: 0.00%
+# Epoch: 46, Loss: 0.69297
+# Acc: 0.00%
+# Epoch: 48, Loss: 0.68334
+# Acc: 0.00%
+# Epoch: 50, Loss: 0.62110
+# Acc: 0.00%
+# Epoch: 52, Loss: 0.66988
+# Acc: 0.00%
+# Epoch: 54, Loss: 0.59932
+# Acc: 0.00%
+# Epoch: 56, Loss: 0.62294
+# Acc: 0.00%
+# Epoch: 58, Loss: 0.60647
+# Acc: 0.00%
+# Epoch: 60, Loss: 0.75567
+# Acc: 0.00%
+# Epoch: 62, Loss: 0.60727
+# Acc: 0.00%
+# Epoch: 64, Loss: 0.63494
+# Acc: 0.00%
+# Epoch: 66, Loss: 0.60802
+# Acc: 0.00%
+# Epoch: 68, Loss: 0.62197
+# Acc: 0.00%
+# Epoch: 70, Loss: 0.60145
+# Acc: 0.00%
+# Epoch: 72, Loss: 0.60833
+# Acc: 0.00%
+# Epoch: 74, Loss: 0.60431
+# Acc: 0.00%
+# Epoch: 76, Loss: 0.60465
+# Acc: 0.00%
+# Epoch: 78, Loss: 0.47476
+# Acc: 100.00%
+# Epoch: 80, Loss: 0.35298
+# Acc: 50.00%
+# Epoch: 82, Loss: 0.08765
+# Acc: 100.00%
+# Epoch: 84, Loss: 0.01742
+# Acc: 100.00%
+# Epoch: 86, Loss: 0.01733
+# Acc: 100.00%
+# Epoch: 88, Loss: 0.03870
+# Acc: 100.00%
+# Epoch: 90, Loss: 0.00666
+# Acc: 100.00%
+# Epoch: 92, Loss: 0.00534
+# Acc: 100.00%
+# Epoch: 94, Loss: 0.01457
+# Acc: 100.00%
+# Epoch: 96, Loss: 0.00773
+# Acc: 100.00%
+# Epoch: 98, Loss: 0.00479
+# Acc: 100.00%
+# Test...
+# Acc: 100.00%
+#
+# Process finished with exit code 0
