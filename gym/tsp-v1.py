@@ -2,6 +2,7 @@ import or_gym
 from solver import solver_RNN
 import torch
 
+episode = 5
 seq_len = 4
 
 env_config = {'N': seq_len}
@@ -16,34 +17,37 @@ model = solver_RNN(
     seq_len,
     2, 10)
 
-s = env.reset()
 
-print('coord')
-print(env.coords)
+for i in range(episode):
+    s = env.reset()
 
-coords = torch.FloatTensor(env.coords).transpose(1, 0).unsqueeze(0)
+    print('-------------------------new game--------------------')
+    print('coord')
+    print(env.coords)
 
-rewards, log_probs, action = model(coords)
+    coords = torch.FloatTensor(env.coords).transpose(1, 0).unsqueeze(0)
 
-action = action.squeeze(0).tolist()
+    rewards, log_probs, action = model(coords)
 
-start_idx = action.index(s[0])
-a_1 = action[start_idx + 1:]
-a_2 = action[0:start_idx + 1]
-action = a_1 + a_2
+    action = action.squeeze(0).tolist()
 
-print('first state', s)
+    start_idx = action.index(s[0])
+    a_1 = action[start_idx + 1:]
+    a_2 = action[0:start_idx + 1]
+    action = a_1 + a_2
 
-total_reward = 0
-cnt = 0
-done = False
-while not done:
-    a = action[cnt]
-    next_state, reward, done, _ = env.step(a)
-    total_reward += reward
-    print('current node', env.current_node)
-    print(next_state, reward, done)
+    print('first state', s)
 
-    cnt += 1
+    total_reward = 0
+    cnt = 0
+    done = False
+    while not done:
+        a = action[cnt]
+        next_state, reward, done, _ = env.step(a)
+        total_reward += reward
+        print('current node', env.current_node)
+        print(next_state, reward, done)
 
-print('total length', total_reward)
+        cnt += 1
+
+    print('total length', total_reward)
