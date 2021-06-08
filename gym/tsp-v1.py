@@ -27,7 +27,7 @@ losses = []
 episodes_length = []
 
 
-def visualization(coords, tour_indices):
+def visualization(coords, tour_indices, title='None'):
     plt.close('all')
 
     num_plots = 3
@@ -49,8 +49,12 @@ def visualization(coords, tour_indices):
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
 
-        break       # fixme
+    plt.title(title)
     plt.show()
+
+
+data_for_visual_coords = []
+data_for_visual_actions = []
 
 
 for i in range(episode):
@@ -62,17 +66,24 @@ for i in range(episode):
 
     coords = torch.FloatTensor(env.coords).transpose(1, 0).unsqueeze(0)
 
-    rewards, log_probs, action, value = model(coords)
+    rewards, log_probs, actions, value = model(coords)
 
+    if i % 10 == 9:
+        data_for_visual_coords.append(coords.squeeze(0))
+        data_for_visual_actions.append(actions.squeeze(0))
     if i % 100 == 99:
-        visualization(coords, action)
+        c = torch.stack(data_for_visual_coords)
+        a = torch.stack(data_for_visual_actions)
+        visualization(c, a, str(i))
+        data_for_visual_coords.clear()
+        data_for_visual_actions.clear()
 
-    action = action.squeeze(0).tolist()
+    actions = actions.squeeze(0).tolist()
 
-    start_idx = action.index(s[0])
-    a_1 = action[start_idx + 1:]
-    a_2 = action[0:start_idx + 1]
-    action = a_1 + a_2
+    start_idx = actions.index(s[0])
+    a_1 = actions[start_idx + 1:]
+    a_2 = actions[0:start_idx + 1]
+    actions = a_1 + a_2
 
     print('first state', s)
 
@@ -80,7 +91,7 @@ for i in range(episode):
     cnt = 0
     done = False
     while not done:
-        a = action[cnt]
+        a = actions[cnt]
         next_state, reward, done, _ = env.step(a)
         total_reward += reward
         print('current node', env.current_node)
@@ -90,7 +101,6 @@ for i in range(episode):
 
     episodes_length.append(total_reward)
     print('total length', total_reward)
-
 
     # network train
     optimizer.zero_grad()
