@@ -4,6 +4,7 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+import numpy as np
 
 episode = 1000
 seq_len = 10
@@ -25,6 +26,33 @@ optimizer = optim.Adam(model.parameters(), lr=3e-4)
 losses = []
 episodes_length = []
 
+
+def visualization(coords, tour_indices):
+    plt.close('all')
+
+    num_plots = 3
+    _, axes = plt.subplots(nrows=num_plots, ncols=num_plots,
+                           sharex='col', sharey='row')
+    axes = [a for ax in axes for a in ax]  # 2dim -> 1dim
+
+    for i, ax in enumerate(axes):
+        # idx 의 좌표 가져오기
+        idx = tour_indices[i].unsqueeze(0)
+        idx = idx.expand(2, -1)
+        data = coords[i].transpose(1, 0)
+        data = data.gather(1, idx).cpu().numpy()
+
+        ax.plot(data[0], data[1], zorder=1)
+        ax.scatter(data[0], data[1], s=4, c='r', zorder=2)
+        ax.scatter(data[0, 0], data[1, 0], s=20, c='k', marker='*', zorder=3)
+
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+
+        break       # fixme
+    plt.show()
+
+
 for i in range(episode):
     s = env.reset()
 
@@ -35,6 +63,9 @@ for i in range(episode):
     coords = torch.FloatTensor(env.coords).transpose(1, 0).unsqueeze(0)
 
     rewards, log_probs, action, value = model(coords)
+
+    if i % 100 == 99:
+        visualization(coords, action)
 
     action = action.squeeze(0).tolist()
 
@@ -60,6 +91,8 @@ for i in range(episode):
     episodes_length.append(total_reward)
     print('total length', total_reward)
 
+
+    # network train
     optimizer.zero_grad()
 
     advantage = (total_reward - value)
