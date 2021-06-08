@@ -1,9 +1,12 @@
 import or_gym
 from solver import solver_RNN
 import torch
+import torch.optim as optim
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
-episode = 5
-seq_len = 4
+episode = 1000
+seq_len = 10
 
 env_config = {'N': seq_len}
 env = or_gym.make('TSP-v1', env_config=env_config)
@@ -17,6 +20,10 @@ model = solver_RNN(
     seq_len,
     2, 10)
 
+optimizer = optim.Adam(model.parameters(), lr=3e-4)
+
+losses = []
+episodes_length = []
 
 for i in range(episode):
     s = env.reset()
@@ -27,7 +34,7 @@ for i in range(episode):
 
     coords = torch.FloatTensor(env.coords).transpose(1, 0).unsqueeze(0)
 
-    rewards, log_probs, action = model(coords)
+    rewards, log_probs, action, value = model(coords)
 
     action = action.squeeze(0).tolist()
 
@@ -50,4 +57,33 @@ for i in range(episode):
 
         cnt += 1
 
+    episodes_length.append(total_reward)
     print('total length', total_reward)
+
+    optimizer.zero_grad()
+
+    advantage = (total_reward - value)
+    actor_loss = -log_probs * advantage
+    critic_loss = F.smooth_l1_loss(value.squeeze(0), torch.FloatTensor([total_reward]))
+
+    loss = actor_loss.sum() + critic_loss
+
+    print('loss : ', loss.item())
+    losses.append(loss.item())
+
+    loss.backward()
+    optimizer.step()
+
+plt.plot(range(len(losses)), losses, color="blue")
+plt.title("A2C Loss")
+plt.xlabel("episode")
+plt.ylabel("loss")
+
+plt.show()
+
+plt.plot(range(len(episodes_length)), episodes_length, color="blue")
+plt.title("Episodes length")
+plt.xlabel("episode")
+plt.ylabel("length")
+
+plt.show()

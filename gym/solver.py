@@ -16,6 +16,8 @@ from rl_with_rnn import RNNTSP
 class Solver(nn.Module):
     def __init__(self):
         super(Solver, self).__init__()
+        self.actor = None
+        self.critic = None
 
     def reward(self, sample_solution):
         """
@@ -23,7 +25,6 @@ class Solver(nn.Module):
             sample_solution seq_len of [batch_size]
             torch.LongTensor [batch_size x seq_len x 2]
         """
-        # 여기 다시 한 번 확인
 
         batch_size, seq_len, _ = sample_solution.size()
 
@@ -43,12 +44,11 @@ class Solver(nn.Module):
             inputs: [batch_size, input_size, seq_len]
         """
         probs, actions = self.actor(inputs)
+        value = self.critic(probs)
 
-        dd = actions.unsqueeze(2).repeat(1, 1, 2)
-        zz = inputs.gather(1, dd)
         R = self.reward(inputs.gather(1, actions.unsqueeze(2).repeat(1, 1, 2)))
 
-        return R, probs, actions
+        return R, probs, actions, value
 
 
 class solver_RNN(Solver):
@@ -65,4 +65,4 @@ class solver_RNN(Solver):
                             seq_len,
                             n_glimpses,
                             tanh_exploration)
-
+        self.critic = nn.Linear(seq_len, 1)
