@@ -6,8 +6,8 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import numpy as np
 
-episode = 1000
-seq_len = 10
+episode = 10000
+seq_len = 20
 
 env_config = {'N': seq_len}
 env = or_gym.make('TSP-v1', env_config=env_config)
@@ -39,13 +39,16 @@ def visualization(coords, tour_indices, title='None'):
         # idx 의 좌표 가져오기
         idx = tour_indices[i].unsqueeze(0)
         idx = idx.expand(2, -1)
+        idx = torch.cat((idx, idx[:, 0:1]), dim=1)
         data = coords[i].transpose(1, 0)
         data = data.gather(1, idx).cpu().numpy()
 
+        # draw graph
         ax.plot(data[0], data[1], zorder=1)
         ax.scatter(data[0], data[1], s=4, c='r', zorder=2)
         ax.scatter(data[0, 0], data[1, 0], s=20, c='k', marker='*', zorder=3)
 
+        # limit 설정
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
 
@@ -98,6 +101,9 @@ for i in range(episode):
         print(next_state, reward, done)
 
         cnt += 1
+
+    # to home
+    total_reward += env.distance_matrix[actions[-2], actions[-1]]
 
     episodes_length.append(total_reward)
     print('total length', total_reward)
