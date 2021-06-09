@@ -4,16 +4,19 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-import numpy as np
+from util import visualization
 
 episode = 10000
-seq_len = 20
+seq_len = 7
 
 env_config = {'N': seq_len}
 env = or_gym.make('TSP-v1', env_config=env_config)
 
 embedding_size = 128
 hidden_size = 128
+beta = 0.99
+grad_clip = 1.5
+
 
 model = solver_RNN(
     embedding_size,
@@ -26,46 +29,18 @@ optimizer = optim.Adam(model.parameters(), lr=3e-4)
 losses = []
 episodes_length = []
 
-
-def visualization(coords, tour_indices, title='None'):
-    plt.close('all')
-
-    num_plots = 3
-    _, axes = plt.subplots(nrows=num_plots, ncols=num_plots,
-                           sharex='col', sharey='row')
-    axes = [a for ax in axes for a in ax]  # 2dim -> 1dim
-
-    for i, ax in enumerate(axes):
-        # idx 의 좌표 가져오기
-        idx = tour_indices[i].unsqueeze(0)
-        idx = idx.expand(2, -1)
-        idx = torch.cat((idx, idx[:, 0:1]), dim=1)
-        data = coords[i].transpose(1, 0)
-        data = data.gather(1, idx).cpu().numpy()
-
-        # draw graph
-        ax.plot(data[0], data[1], zorder=1)
-        ax.scatter(data[0], data[1], s=4, c='r', zorder=2)
-        ax.scatter(data[0, 0], data[1, 0], s=20, c='k', marker='*', zorder=3)
-
-        # limit 설정
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-
-    plt.title(title)
-    plt.show()
-
-
 data_for_visual_coords = []
 data_for_visual_actions = []
 
+moving_avg = torch.zeros(1)
+first_step = True
 
 for i in range(episode):
     s = env.reset()
 
-    print('-------------------------new game--------------------')
-    print('coord')
-    print(env.coords)
+    # print('-------------------------new game--------------------')
+    # print('coord')
+    # print(env.coords)
 
     coords = torch.FloatTensor(env.coords).transpose(1, 0).unsqueeze(0)
 
@@ -97,34 +72,40 @@ for i in range(episode):
         a = actions[cnt]
         next_state, reward, done, _ = env.step(a)
         total_reward += reward
-        print('current node', env.current_node)
-        print(next_state, reward, done)
+        # print('current node', env.current_node)
+        # print(next_state, reward, done)
 
         cnt += 1
 
     # to home
     total_reward += env.distance_matrix[actions[-2], actions[-1]]
 
+    if first_step:  # generating first baseline
+        moving_avg = total_reward
+        first_step = False
+        continue
+
     episodes_length.append(total_reward)
     print('total length', total_reward)
 
     # network train
-    optimizer.zero_grad()
 
-    advantage = (total_reward - value)
-    actor_loss = -log_probs * advantage
-    critic_loss = F.smooth_l1_loss(value.squeeze(0), torch.FloatTensor([total_reward]))
-
-    loss = actor_loss.sum() + critic_loss
+    moving_avg = moving_avg * beta + total_reward * (1.0 - beta)
+    advantage = total_reward - moving_avg
+    log_probs = torch.sum(log_probs, dim=-1)
+    log_probs[log_probs < -100] = -100
+    loss = (advantage * log_probs).mean()
 
     print('loss : ', loss.item())
     losses.append(loss.item())
-
+    torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+    optimizer.zero_grad()
     loss.backward()
+
     optimizer.step()
 
 plt.plot(range(len(losses)), losses, color="blue")
-plt.title("A2C Loss")
+plt.title("Active search Loss")
 plt.xlabel("episode")
 plt.ylabel("loss")
 
