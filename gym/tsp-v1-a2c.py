@@ -5,10 +5,10 @@ import torch.optim as optim
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from util import visualization
-
+import torch.nn as nn
 
 episode = 10000
-seq_len = 20
+seq_len = 7
 
 env_config = {'N': seq_len}
 env = or_gym.make('TSP-v1', env_config=env_config)
@@ -22,23 +22,21 @@ model = solver_RNN(
     seq_len,
     2, 10)
 
+l2Loss = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=3e-4)
 
 losses = []
 episodes_length = []
 
-
-
 data_for_visual_coords = []
 data_for_visual_actions = []
-
 
 for i in range(episode):
     s = env.reset()
 
-    print('-------------------------new game--------------------')
-    print('coord')
-    print(env.coords)
+    # print('-------------------------new game--------------------')
+    # print('coord')
+    # print(env.coords)
 
     coords = torch.FloatTensor(env.coords).transpose(1, 0).unsqueeze(0)
 
@@ -70,8 +68,8 @@ for i in range(episode):
         a = actions[cnt]
         next_state, reward, done, _ = env.step(a)
         total_reward += reward
-        print('current node', env.current_node)
-        print(next_state, reward, done)
+        # print('current node', env.current_node)
+        # print(next_state, reward, done)
 
         cnt += 1
 
@@ -84,12 +82,14 @@ for i in range(episode):
     # network train
     optimizer.zero_grad()
 
-    advantage = (total_reward - value)
-    actor_loss = -log_probs * advantage
-    critic_loss = F.smooth_l1_loss(value.squeeze(0), torch.FloatTensor([total_reward]))
+    advantage = (value - total_reward)
+
+    actor_loss = advantage * log_probs
+    t = torch.FloatTensor([total_reward])
+    v = value.squeeze(0)
+    critic_loss = l2Loss(t, v)
 
     loss = actor_loss.sum() + critic_loss
-
     print('loss : ', loss.item())
     losses.append(loss.item())
 
